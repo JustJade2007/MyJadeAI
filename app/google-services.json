@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "903414621529",
+    "project_id": "jadeaichat",
+    "storage_bucket": "jadeaichat.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903414621529:android:58d8927e29bb1eb8975848",
+        "android_client_info": {
+          "package_name": "com.justjade.myjadeai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "903414621529-ia27b0bogpf3sq7f3fpa3cjqn0p3n481.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.justjade.myjadeai",
+            "certificate_hash": "7bf7f43c76ecee03be4d107137dd532f77e0dc5c"
+          }
+        },
+        {
+          "client_id": "903414621529-97u7p43tqs7j4gl939cit6hpvudkd4lf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmTFQC9-Guyu34p5kGSKPkeUh8R3NyftM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "903414621529-97u7p43tqs7j4gl939cit6hpvudkd4lf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
