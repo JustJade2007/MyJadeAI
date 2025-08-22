@@ -30,10 +30,26 @@ class AuthViewModel : ViewModel() {
 
     init {
         auth.addAuthStateListener { firebaseAuth ->
-            _user.value = firebaseAuth.currentUser
-            if (firebaseAuth.currentUser != null) {
-                checkUserStatus()
-                _isDevUser.value = firebaseAuth.currentUser?.uid == DEV_USER_UID
+            val user = firebaseAuth.currentUser
+            _user.value = user
+            if (user != null) {
+                viewModelScope.launch {
+                    try {
+                        val userRef = firestore.collection("users").document(user.uid)
+                        val document = userRef.get().await()
+                        if (document.exists()) {
+                            _userStatus.value = document.getString("status")
+                        } else {
+                            val userData = mapOf("status" to "pending", "email" to user.email)
+                            userRef.set(userData).await()
+                            _userStatus.value = "pending"
+                        }
+                        _isDevUser.value = user.uid == DEV_USER_UID
+                    } catch (e: Exception) {
+                        Log.e("AuthViewModel", "Error checking user status/document", e)
+                        _userStatus.value = null // Reset status on error
+                    }
+                }
             } else {
                 _userStatus.value = null
                 _isDevUser.value = false
@@ -56,25 +72,9 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 auth.createUserWithEmailAndPassword(email, password).await()
-                checkAndCreateUserDocument()
+                // Auth state listener will handle document creation
             } catch (e: Exception) {
                 Log.e("AuthViewModel", "Email Registration failed", e)
-            }
-        }
-    }
-
-    private fun checkUserStatus() {
-        viewModelScope.launch {
-            val firebaseUser = auth.currentUser
-            if (firebaseUser != null) {
-                try {
-                    val document = firestore.collection("users").document(firebaseUser.uid).get().await()
-                    if (document.exists()) {
-                        _userStatus.value = document.getString("status")
-                    }
-                } catch (e: Exception) {
-                    Log.e("AuthViewModel", "Error checking user status", e)
-                }
             }
         }
     }
@@ -83,29 +83,9 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 auth.signInWithCredential(credential).await()
-                checkAndCreateUserDocument()
+                // Auth state listener will handle document creation
             } catch (e: Exception) {
                 Log.e("AuthViewModel", "Google Sign-In failed", e)
-            }
-        }
-    }
-
-    private fun checkAndCreateUserDocument() {
-        viewModelScope.launch {
-            val firebaseUser = auth.currentUser
-            if (firebaseUser != null) {
-                val userRef = firestore.collection("users").document(firebaseUser.uid)
-                val document = userRef.get().await()
-                if (!document.exists()) {
-                    val userData = mapOf(
-                        "status" to "pending",
-                        "email" to firebaseUser.email
-                    )
-                    userRef.set(userData).await()
-                    _userStatus.value = "pending"
-                } else {
-                    _userStatus.value = document.getString("status")
-                }
             }
         }
     }
