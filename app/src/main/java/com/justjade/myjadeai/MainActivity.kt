@@ -40,20 +40,19 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val authViewModel: AuthViewModel = viewModel()
                     val navController = rememberNavController()
-                    val user by authViewModel.user.collectAsState()
-                    val userStatus by authViewModel.userStatus.collectAsState()
-                    val isDevUser by authViewModel.isDevUser.collectAsState()
+                    val authViewModel: AuthViewModel = viewModel()
+                    val navController = rememberNavController()
 
-                    NavHost(navController = navController, startDestination = if (user != null) "status_router" else "login") {
+                    NavHost(navController = navController, startDestination = "auth_handler") {
+                        composable("auth_handler") {
+                            AuthHandlerScreen(navController = navController, viewModel = authViewModel)
+                        }
                         composable("login") {
                             LoginScreen(navController = navController, viewModel = authViewModel)
                         }
                         composable("dev_panel") {
                             val devViewModel: DevViewModel = viewModel()
                             DevPanelScreen(navController = navController, viewModel = devViewModel)
-                        }
-                        composable("status_router") {
-                            UserStatusRouter(userStatus = userStatus, navController = navController)
                         }
                         composable("pending") {
                             PendingScreen()
@@ -62,6 +61,7 @@ class MainActivity : ComponentActivity() {
                             DeclinedScreen()
                         }
                         composable("chat") {
+                            val isDevUser by authViewModel.isDevUser.collectAsState()
                             ChatScreen(isDevUser = isDevUser, navController = navController)
                         }
                     }
@@ -72,17 +72,34 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun UserStatusRouter(userStatus: String?, navController: NavController) {
-    when (userStatus) {
-        "approved" -> navController.navigate("chat") {
-            popUpTo("login") { inclusive = true }
+fun AuthHandlerScreen(navController: NavController, viewModel: AuthViewModel) {
+    val user by viewModel.user.collectAsState()
+    val userStatus by viewModel.userStatus.collectAsState()
+
+    LaunchedEffect(user, userStatus) {
+        if (user == null) {
+            navController.navigate("login") {
+                popUpTo("auth_handler") { inclusive = true }
+            }
+        } else {
+            if (userStatus != null) {
+                val destination = when (userStatus) {
+                    "approved" -> "chat"
+                    "pending" -> "pending"
+                    "declined" -> "declined"
+                    else -> null
+                }
+                destination?.let {
+                    navController.navigate(it) {
+                        popUpTo("auth_handler") { inclusive = true }
+                    }
+                }
+            }
         }
-        "pending" -> navController.navigate("pending") {
-            popUpTo("login") { inclusive = true }
-        }
-        "declined" -> navController.navigate("declined") {
-            popUpTo("login") { inclusive = true }
-        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
     }
 }
 
@@ -163,14 +180,6 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
         }
     }
 
-    val userStatus by viewModel.userStatus.collectAsState()
-    LaunchedEffect(userStatus) {
-        if (userStatus != null) {
-            navController.navigate("status_router") {
-                popUpTo("login") { inclusive = true }
-            }
-        }
-    }
 }
 
 @Composable
