@@ -20,6 +20,9 @@ class DevViewModel : ViewModel() {
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users
 
@@ -38,6 +41,9 @@ class DevViewModel : ViewModel() {
     fun login(username: String, password: String) {
         if (username == BuildConfig.DEV_USERNAME && password == BuildConfig.DEV_PASSWORD) {
             _isLoggedIn.value = true
+            _error.value = null
+        } else {
+            _error.value = "Invalid username or password"
         }
     }
 

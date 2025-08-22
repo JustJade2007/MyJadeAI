@@ -2,8 +2,7 @@ package com.justjade.myjadeai.presentation.dev
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,9 +15,10 @@ fun DevLoginScreen(navController: NavController, viewModel: DevViewModel) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+    val error by viewModel.error.collectAsState()
 
-    if (isLoggedIn) {
-        LaunchedEffect(Unit) {
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn) {
             navController.navigate("dev_panel") {
                 popUpTo("dev_login") { inclusive = true }
             }
@@ -51,6 +51,10 @@ fun DevLoginScreen(navController: NavController, viewModel: DevViewModel) {
             viewModel.login(username, password)
         }) {
             Text("Dev Login")
+        }
+        error?.let {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = it, color = MaterialTheme.colorScheme.error)
         }
     }
 }
