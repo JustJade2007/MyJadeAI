@@ -3,7 +3,6 @@ package com.justjade.myjadeai.presentation.dev
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.justjade.myjadeai.BuildConfig
 import com.justjade.myjadeai.presentation.dev.model.Model
 import com.justjade.myjadeai.presentation.dev.model.ServerStatus
 import com.justjade.myjadeai.presentation.dev.model.User
@@ -16,12 +15,6 @@ import kotlinx.coroutines.tasks.await
 
 class DevViewModel : ViewModel() {
     private val firestore = Firebase.firestore
-
-    private val _isLoggedIn = MutableStateFlow(false)
-    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
 
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users
@@ -36,15 +29,6 @@ class DevViewModel : ViewModel() {
         fetchUsers()
         fetchModels()
         fetchServerStatus()
-    }
-
-    fun login(username: String, password: String) {
-        if (username == BuildConfig.DEV_USERNAME && password == BuildConfig.DEV_PASSWORD) {
-            _isLoggedIn.value = true
-            _error.value = null
-        } else {
-            _error.value = "Invalid username or password"
-        }
     }
 
     fun fetchUsers() {

@@ -17,6 +17,7 @@ import kotlinx.coroutines.tasks.await
 class AuthViewModel : ViewModel() {
     private val auth: FirebaseAuth = Firebase.auth
     private val firestore = Firebase.firestore
+    private val DEV_USER_UID = "Cq3vnNS8hwQjDnvSr5lRwWy9GYT2"
 
     private val _user = MutableStateFlow(auth.currentUser)
     val user: StateFlow<FirebaseUser?> = _user
@@ -24,13 +25,18 @@ class AuthViewModel : ViewModel() {
     private val _userStatus = MutableStateFlow<String?>(null)
     val userStatus: StateFlow<String?> = _userStatus
 
+    private val _isDevUser = MutableStateFlow(false)
+    val isDevUser: StateFlow<Boolean> = _isDevUser
+
     init {
         auth.addAuthStateListener { firebaseAuth ->
             _user.value = firebaseAuth.currentUser
             if (firebaseAuth.currentUser != null) {
                 checkUserStatus()
+                _isDevUser.value = firebaseAuth.currentUser?.uid == DEV_USER_UID
             } else {
                 _userStatus.value = null
+                _isDevUser.value = false
             }
         }
     }
