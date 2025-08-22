@@ -134,7 +134,7 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
 
             coroutineScope.launch {
                 try {
-                    val result = credentialManager.getCredential(request, this@MainActivity)
+                    val result = credentialManager.getCredential(request, context)
                     val credential = result.credential
                     if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                         try {
