@@ -15,8 +15,6 @@ android {
     val keystoreProperties = Properties()
     if (keystorePropertiesFile.exists()) {
         keystoreProperties.load(keystorePropertiesFile.inputStream())
-    } else {
-        throw GradleException("keystore.properties not found in app/ directory! This file is required for developer login credentials.")
     }
 
     defaultConfig {
