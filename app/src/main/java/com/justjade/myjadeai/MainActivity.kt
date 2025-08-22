@@ -123,18 +123,18 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
         Button(onClick = {
             val credentialManager = CredentialManager.create(context)
 
-            val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.builder()
+            val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
                 .setServerClientId("74989094283-a7j7n1spbl593m6f5obgheb922vhd1rc.apps.googleusercontent.com")
                 .build()
 
-            val request: GetCredentialRequest = GetCredentialRequest.builder()
+            val request: GetCredentialRequest = GetCredentialRequest.Builder()
                 .addCredentialOption(googleIdOption)
                 .build()
 
             coroutineScope.launch {
                 try {
-                    val result = credentialManager.getCredential(request, this@MainActivity)
+                    val result = credentialManager.getCredential(context, request)
                     val credential = result.credential
                     if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                         try {
