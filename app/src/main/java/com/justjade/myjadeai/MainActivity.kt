@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
                         if (user == null) {
                             if (currentRoute != "login") {
                                 navController.navigate("login") {
-                                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                                    popUpTo("loading") { inclusive = true }
                                 }
                             }
                         } else { // User is not null
@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
                                 destination?.let {
                                     if (currentRoute != it) {
                                         navController.navigate(it) {
-                                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                                            popUpTo("loading") { inclusive = true }
                                         }
                                     }
                                 }
