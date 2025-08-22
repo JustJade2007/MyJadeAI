@@ -1,9 +1,16 @@
 package com.justjade.myjadeai.presentation.dev
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.justjade.myjadeai.presentation.dev.model.Model
+import com.justjade.myjadeai.presentation.dev.model.User
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,19 +35,6 @@ fun DevPanelScreen(navController: NavController, viewModel: DevViewModel) {
         }
     }
 }
-
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import com.justjade.myjadeai.presentation.dev.model.User
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-
 
 @Composable
 fun UserManagementScreen(viewModel: DevViewModel) {
@@ -81,9 +75,6 @@ fun UserRow(user: User, viewModel: DevViewModel) {
         }
     }
 }
-
-import com.justjade.myjadeai.presentation.dev.model.Model
-
 
 @Composable
 fun ModelStatusScreen(viewModel: DevViewModel) {
