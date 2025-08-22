@@ -11,10 +11,12 @@ android {
     namespace = "com.justjade.myjadeai"
     compileSdk = 36
 
-    val keystorePropertiesFile = rootProject.file("app/keystore.properties")
+    val keystorePropertiesFile = project.file("keystore.properties")
     val keystoreProperties = Properties()
     if (keystorePropertiesFile.exists()) {
         keystoreProperties.load(keystorePropertiesFile.inputStream())
+    } else {
+        throw new GradleException("keystore.properties not found in app/ directory! This file is required for developer login credentials.")
     }
 
     defaultConfig {
