@@ -1,6 +1,6 @@
 # AI Chat Application
 
-![Project Showcase](https://your-image-url-here.com/showcase.png) <!-- It's highly recommended to add a screenshot or banner here! -->
+TODO: ADD SCREENSHOT/BANNER OF FINISHED PRODUCT
 
 A full-stack, real-time chat application designed to provide a user interface for interacting with a custom AI model. This project serves as a comprehensive portfolio piece demonstrating modern Android development practices, backend integration with Firebase, and complex feature implementation.
 
