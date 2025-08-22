@@ -53,14 +53,18 @@ class MainActivity : ComponentActivity() {
                             DevPanelScreen(navController = navController, viewModel = devViewModel)
                         }
                         composable("pending") {
-                            PendingScreen()
+                            PendingScreen(viewModel = authViewModel)
                         }
                         composable("declined") {
-                            DeclinedScreen()
+                            DeclinedScreen(viewModel = authViewModel)
                         }
                         composable("chat") {
                             val isDevUser by authViewModel.isDevUser.collectAsState()
-                            ChatScreen(isDevUser = isDevUser, navController = navController)
+                            ChatScreen(
+                                isDevUser = isDevUser,
+                                navController = navController,
+                                viewModel = authViewModel
+                            )
                         }
                     }
                 }
@@ -181,31 +185,53 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
 }
 
 @Composable
-fun PendingScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+fun PendingScreen(viewModel: AuthViewModel) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text("Your account is pending approval.", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = { viewModel.signOut() }) {
+            Text("Log Out")
+        }
     }
 }
 
 @Composable
-fun DeclinedScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+fun DeclinedScreen(viewModel: AuthViewModel) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text("Your account has been declined.", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = { viewModel.signOut() }) {
+            Text("Log Out")
+        }
     }
 }
 
 @Composable
-fun ChatScreen(isDevUser: Boolean, navController: NavController) {
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+fun ChatScreen(isDevUser: Boolean, navController: NavController, viewModel: AuthViewModel) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Text("Welcome to the Chat!", style = MaterialTheme.typography.headlineMedium)
-        if (isDevUser) {
-            Button(
-                onClick = { navController.navigate("dev_panel") },
-                modifier = Modifier.align(Alignment.TopEnd)
-            ) {
-                Text("Dev Panel")
+
+        Row(modifier = Modifier.align(Alignment.TopEnd)) {
+            if (isDevUser) {
+                Button(onClick = { navController.navigate("dev_panel") }) {
+                    Text("Dev Panel")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+            Button(onClick = { viewModel.signOut() }) {
+                Text("Log Out")
             }
         }
     }

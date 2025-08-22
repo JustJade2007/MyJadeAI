@@ -89,4 +89,8 @@ class AuthViewModel : ViewModel() {
             }
         }
     }
+
+    fun signOut() {
+        auth.signOut()
+    }
 }
