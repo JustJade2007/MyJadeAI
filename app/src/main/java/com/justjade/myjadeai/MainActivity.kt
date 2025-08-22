@@ -40,10 +40,42 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val authViewModel: AuthViewModel = viewModel()
                     val navController = rememberNavController()
+                    val user by authViewModel.user.collectAsState()
+                    val userStatus by authViewModel.userStatus.collectAsState()
 
-                    NavHost(navController = navController, startDestination = "auth_handler") {
-                        composable("auth_handler") {
-                            AuthHandlerScreen(navController = navController, viewModel = authViewModel)
+                    // This LaunchedEffect is always active and handles all navigation
+                    LaunchedEffect(user, userStatus) {
+                        val currentRoute = navController.currentBackStackEntry?.destination?.route
+                        if (user == null) {
+                            if (currentRoute != "login") {
+                                navController.navigate("login") {
+                                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                                }
+                            }
+                        } else { // User is not null
+                            if (userStatus != null) {
+                                val destination = when (userStatus) {
+                                    "approved" -> "chat"
+                                    "pending" -> "pending"
+                                    "declined" -> "declined"
+                                    else -> null
+                                }
+                                destination?.let {
+                                    if (currentRoute != it) {
+                                        navController.navigate(it) {
+                                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    NavHost(navController = navController, startDestination = "loading") {
+                        composable("loading") {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
                         }
                         composable("login") {
                             LoginScreen(navController = navController, viewModel = authViewModel)
@@ -70,38 +102,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-}
-
-@Composable
-fun AuthHandlerScreen(navController: NavController, viewModel: AuthViewModel) {
-    val user by viewModel.user.collectAsState()
-    val userStatus by viewModel.userStatus.collectAsState()
-
-    LaunchedEffect(user, userStatus) {
-        if (user == null) {
-            navController.navigate("login") {
-                popUpTo("auth_handler") { inclusive = true }
-            }
-        } else {
-            if (userStatus != null) {
-                val destination = when (userStatus) {
-                    "approved" -> "chat"
-                    "pending" -> "pending"
-                    "declined" -> "declined"
-                    else -> null
-                }
-                destination?.let {
-                    navController.navigate(it) {
-                        popUpTo("auth_handler") { inclusive = true }
-                    }
-                }
-            }
-        }
-    }
-
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
     }
 }
 
@@ -181,7 +181,6 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
             Text("Sign in with Google")
         }
     }
-
 }
 
 @Composable
