@@ -6,7 +6,6 @@ plugins {
 }
 
 import java.util.Properties
-import org.gradle.jvm.toolchain.JavaLanguageVersion
 
 android {
     namespace = "com.justjade.myjadeai"
@@ -61,9 +60,6 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
-    }
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
 
