@@ -76,6 +76,10 @@ To get a local copy up and running, follow these simple steps.
 
 ---
 
+# DISCLAIMER
+
+This is NOT an AI model,just the chat application for talking between them and statuses.
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
