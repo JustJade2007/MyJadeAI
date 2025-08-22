@@ -5,9 +5,17 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+import java.util.Properties
+
 android {
     namespace = "com.justjade.myjadeai"
     compileSdk = 36
+
+    val keystorePropertiesFile = rootProject.file("app/keystore.properties")
+    val keystoreProperties = Properties()
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(keystorePropertiesFile.inputStream())
+    }
 
     defaultConfig {
         applicationId = "com.justjade.myjadeai"
@@ -20,6 +28,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "DEV_USERNAME", "\"${keystoreProperties.getProperty("devUsername")}\"")
+        buildConfigField("String", "DEV_PASSWORD", "\"${keystoreProperties.getProperty("devPassword")}\"")
     }
 
     buildTypes {
@@ -40,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     @Suppress("UnstableApiUsage")
     composeOptions {

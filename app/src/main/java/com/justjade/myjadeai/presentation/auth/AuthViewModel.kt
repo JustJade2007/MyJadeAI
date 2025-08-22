@@ -91,7 +91,11 @@ class AuthViewModel : ViewModel() {
                 val userRef = firestore.collection("users").document(firebaseUser.uid)
                 val document = userRef.get().await()
                 if (!document.exists()) {
-                    userRef.set(mapOf("status" to "pending")).await()
+                    val userData = mapOf(
+                        "status" to "pending",
+                        "email" to firebaseUser.email
+                    )
+                    userRef.set(userData).await()
                     _userStatus.value = "pending"
                 } else {
                     _userStatus.value = document.getString("status")

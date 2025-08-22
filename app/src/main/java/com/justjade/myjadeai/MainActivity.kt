@@ -24,6 +24,9 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.justjade.myjadeai.presentation.auth.AuthViewModel
+import com.justjade.myjadeai.presentation.dev.DevLoginScreen
+import com.justjade.myjadeai.presentation.dev.DevPanelScreen
+import com.justjade.myjadeai.presentation.dev.DevViewModel
 import com.justjade.myjadeai.ui.theme.MyJadeAITheme
 import kotlinx.coroutines.launch
 
@@ -37,6 +40,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val authViewModel: AuthViewModel = viewModel()
+                    val devViewModel: DevViewModel = viewModel()
                     val navController = rememberNavController()
                     val user by authViewModel.user.collectAsState()
                     val userStatus by authViewModel.userStatus.collectAsState()
@@ -44,6 +48,12 @@ class MainActivity : ComponentActivity() {
                     NavHost(navController = navController, startDestination = if (user != null) "status_router" else "login") {
                         composable("login") {
                             LoginScreen(navController = navController, viewModel = authViewModel)
+                        }
+                        composable("dev_login") {
+                            DevLoginScreen(navController = navController, viewModel = devViewModel)
+                        }
+                        composable("dev_panel") {
+                            DevPanelScreen(navController = navController, viewModel = devViewModel)
                         }
                         composable("status_router") {
                             UserStatusRouter(userStatus = userStatus, navController = navController)
@@ -153,6 +163,10 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
             }
         }) {
             Text("Sign in with Google")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = { navController.navigate("dev_login") }) {
+            Text("Developer Login")
         }
     }
 
