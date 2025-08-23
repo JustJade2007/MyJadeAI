@@ -24,10 +24,16 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.justjade.myjadeai.presentation.auth.AuthViewModel
+import com.justjade.myjadeai.presentation.chat.ChatViewModel
+import com.justjade.myjadeai.presentation.chat.model.Message
 import com.justjade.myjadeai.presentation.dev.DevPanelScreen
 import com.justjade.myjadeai.presentation.dev.DevViewModel
 import com.justjade.myjadeai.ui.theme.MyJadeAITheme
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,10 +98,12 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("chat") {
                             val isDevUser by authViewModel.isDevUser.collectAsState()
+                            val chatViewModel: ChatViewModel = viewModel()
                             ChatScreen(
                                 isDevUser = isDevUser,
                                 navController = navController,
-                                viewModel = authViewModel
+                                authViewModel = authViewModel,
+                                chatViewModel = chatViewModel
                             )
                         }
                     }
@@ -215,7 +223,16 @@ fun DeclinedScreen(viewModel: AuthViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(isDevUser: Boolean, navController: NavController, viewModel: AuthViewModel) {
+fun ChatScreen(
+    isDevUser: Boolean,
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    chatViewModel: ChatViewModel
+) {
+    val messages by chatViewModel.messages.collectAsState()
+    var text by remember { mutableStateOf("") }
+    val currentUser = Firebase.auth.currentUser
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -227,21 +244,70 @@ fun ChatScreen(isDevUser: Boolean, navController: NavController, viewModel: Auth
                         }
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { viewModel.signOut() }) {
+                    Button(onClick = { authViewModel.signOut() }) {
                         Text("Log Out")
                     }
                 }
             )
         }
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp), // Add some content padding
-            contentAlignment = Alignment.Center
         ) {
-            Text("Welcome to the Chat!", style = MaterialTheme.typography.headlineMedium)
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                items(messages) { message ->
+                    MessageItem(message, message.senderId == currentUser?.uid)
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("Message") },
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = {
+                    chatViewModel.sendMessage(text)
+                    text = ""
+                }) {
+                    Text("Send")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MessageItem(message: Message, isSentByCurrentUser: Boolean) {
+    val alignment = if (isSentByCurrentUser) Alignment.CenterEnd else Alignment.CenterStart
+    val horizontalGravity = if (isSentByCurrentUser) Alignment.End else Alignment.Start
+
+    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = alignment) {
+        Column(horizontalAlignment = horizontalGravity) {
+            Text(
+                text = message.text,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier
+                    .padding(8.dp)
+            )
+            Text(
+                text = message.timestamp.toDate().toString(),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
         }
     }
 }
