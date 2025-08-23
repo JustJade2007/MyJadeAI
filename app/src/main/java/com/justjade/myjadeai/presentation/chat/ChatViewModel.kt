@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -83,12 +84,21 @@ class ChatViewModel(private val conversationId: String) : ViewModel() {
         }
         viewModelScope.launch {
             try {
-                val messageCollection = firestore.collection("conversations").document(conversationId).collection("messages")
+                val conversationRef = firestore.collection("conversations").document(conversationId)
+                val messageCollection = conversationRef.collection("messages")
                 val messages = messageCollection.get().await()
+
                 val batch = firestore.batch()
                 for (document in messages) {
                     batch.delete(document.reference)
                 }
+
+                val conversationUpdate = mapOf(
+                    "lastMessageText" to "",
+                    "lastMessageTimestamp" to FieldValue.serverTimestamp()
+                )
+                batch.update(conversationRef, conversationUpdate)
+
                 batch.commit().await()
                 Log.d("ChatViewModel", "Conversation $conversationId reset successfully.")
             } catch (e: Exception) {

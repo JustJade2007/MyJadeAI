@@ -266,11 +266,8 @@ fun ChatScreen(
             TopAppBar(
                 title = { Text("Chat") },
                 navigationIcon = {
-                    // Only show back button if it's a regular user
-                    if (!isDevUser) {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                        }
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
