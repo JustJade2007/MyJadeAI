@@ -26,6 +26,8 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import com.google.firebase.auth.GoogleAuthProvider
 import com.justjade.myjadeai.presentation.auth.AuthViewModel
 import com.justjade.myjadeai.presentation.chat.ChatViewModel
+import com.justjade.myjadeai.presentation.chat.ChatViewModelFactory
+import com.justjade.myjadeai.presentation.chat.ModelSelectionScreen
 import com.justjade.myjadeai.presentation.chat.model.Message
 import com.justjade.myjadeai.presentation.dev.DevPanelScreen
 import com.justjade.myjadeai.presentation.dev.DevViewModel
@@ -62,7 +64,7 @@ class MainActivity : ComponentActivity() {
                         } else { // User is not null
                             if (userStatus != null) {
                                 val destination = when (userStatus) {
-                                    "approved" -> "chat"
+                                    "approved" -> "model_selection"
                                     "pending" -> "pending"
                                     "declined" -> "declined"
                                     else -> null
@@ -87,6 +89,9 @@ class MainActivity : ComponentActivity() {
                         composable("login") {
                             LoginScreen(viewModel = authViewModel)
                         }
+                        composable("model_selection") {
+                            ModelSelectionScreen(navController = navController)
+                        }
                         composable("dev_panel") {
                             val devViewModel: DevViewModel = viewModel()
                             DevPanelScreen(navController = navController, viewModel = devViewModel)
@@ -97,9 +102,12 @@ class MainActivity : ComponentActivity() {
                         composable("declined") {
                             DeclinedScreen(viewModel = authViewModel)
                         }
-                        composable("chat") {
+                        composable("chat/{conversationId}") { backStackEntry ->
+                            val conversationId = backStackEntry.arguments?.getString("conversationId") ?: ""
+                            val chatViewModel: ChatViewModel = viewModel(
+                                factory = ChatViewModelFactory(conversationId)
+                            )
                             val isDevUser by authViewModel.isDevUser.collectAsState()
-                            val chatViewModel: ChatViewModel = viewModel()
                             ChatScreen(
                                 isDevUser = isDevUser,
                                 navController = navController,

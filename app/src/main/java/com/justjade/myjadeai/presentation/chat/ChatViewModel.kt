@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class ChatViewModel : ViewModel() {
+class ChatViewModel(private val conversationId: String) : ViewModel() {
     private val firestore = Firebase.firestore
     private val auth = Firebase.auth
 
@@ -24,13 +24,15 @@ class ChatViewModel : ViewModel() {
     }
 
     private fun listenForMessages() {
-        // For now, listen to a single, hardcoded chat room.
-        // This will be expanded later to handle multiple conversations.
-        firestore.collection("chats")
+        if (conversationId.isBlank()) {
+            Log.w("ChatViewModel", "Conversation ID is blank. Not listening for messages.")
+            return
+        }
+        firestore.collection("conversations").document(conversationId).collection("messages")
             .orderBy("timestamp", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
-                    Log.w("ChatViewModel", "Listen failed.", e)
+                    Log.w("ChatViewModel", "Listen failed for conversation $conversationId", e)
                     return@addSnapshotListener
                 }
 
@@ -45,7 +47,7 @@ class ChatViewModel : ViewModel() {
 
     fun sendMessage(text: String) {
         val currentUser = auth.currentUser
-        if (text.isNotBlank() && currentUser != null) {
+        if (text.isNotBlank() && currentUser != null && conversationId.isNotBlank()) {
             val senderName = currentUser.displayName?.takeIf { it.isNotBlank() } ?: currentUser.email ?: "Anonymous"
             val message = Message(
                 senderId = currentUser.uid,
@@ -53,12 +55,13 @@ class ChatViewModel : ViewModel() {
                 text = text,
                 timestamp = com.google.firebase.Timestamp.now()
             )
-            firestore.collection("chats").add(message)
+            firestore.collection("conversations").document(conversationId).collection("messages")
+                .add(message)
                 .addOnSuccessListener {
-                    Log.d("ChatViewModel", "Message sent")
+                    Log.d("ChatViewModel", "Message sent to conversation $conversationId")
                 }
                 .addOnFailureListener { e ->
-                    Log.w("ChatViewModel", "Error sending message", e)
+                    Log.w("ChatViewModel", "Error sending message to conversation $conversationId", e)
                 }
         }
     }
