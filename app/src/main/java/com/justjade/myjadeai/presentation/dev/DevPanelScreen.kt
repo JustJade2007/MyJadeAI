@@ -3,6 +3,8 @@ package com.justjade.myjadeai.presentation.dev
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,20 +20,33 @@ fun DevPanelScreen(navController: NavController, viewModel: DevViewModel) {
     var tabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("User Management", "Model Status", "Server Status")
 
-    Column {
-        TabRow(selectedTabIndex = tabIndex) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = tabIndex == index,
-                    onClick = { tabIndex = index },
-                    text = { Text(title) }
-                )
-            }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Developer Panel") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
         }
-        when (tabIndex) {
-            0 -> UserManagementScreen(viewModel)
-            1 -> ModelStatusScreen(viewModel)
-            2 -> ServerStatusScreen(viewModel)
+    ) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)) {
+            TabRow(selectedTabIndex = tabIndex) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = tabIndex == index,
+                        onClick = { tabIndex = index },
+                        text = { Text(title) }
+                    )
+                }
+            }
+            when (tabIndex) {
+                0 -> UserManagementScreen(viewModel)
+                1 -> ModelStatusScreen(viewModel)
+                2 -> ServerStatusScreen(viewModel)
+            }
         }
     }
 }
