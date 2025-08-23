@@ -46,9 +46,10 @@ class ChatViewModel : ViewModel() {
     fun sendMessage(text: String) {
         val currentUser = auth.currentUser
         if (text.isNotBlank() && currentUser != null) {
+            val senderName = currentUser.displayName?.takeIf { it.isNotBlank() } ?: currentUser.email ?: "Anonymous"
             val message = Message(
                 senderId = currentUser.uid,
-                senderName = currentUser.displayName ?: "Anonymous",
+                senderName = senderName,
                 text = text,
                 timestamp = com.google.firebase.Timestamp.now()
             )
