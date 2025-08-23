@@ -260,9 +260,9 @@ fun ChatScreen(
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.Bottom
+                reverseLayout = true
             ) {
-                items(messages) { message ->
+                items(messages.reversed()) { message ->
                     MessageItem(message, message.senderId == currentUser?.uid)
                 }
             }
@@ -290,13 +290,26 @@ fun ChatScreen(
     }
 }
 
+import androidx.compose.ui.text.font.FontWeight
+
 @Composable
 fun MessageItem(message: Message, isSentByCurrentUser: Boolean) {
     val alignment = if (isSentByCurrentUser) Alignment.CenterEnd else Alignment.CenterStart
     val horizontalGravity = if (isSentByCurrentUser) Alignment.End else Alignment.Start
 
-    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = alignment) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        contentAlignment = alignment
+    ) {
         Column(horizontalAlignment = horizontalGravity) {
+            Text(
+                text = message.senderName,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
             Text(
                 text = message.text,
                 style = MaterialTheme.typography.bodyLarge,
