@@ -100,13 +100,15 @@ class MainActivity : ComponentActivity() {
                                 devViewModel = devViewModel
                             )
                         }
-                        composable("chat/{conversationId}") { backStackEntry ->
+                        composable("chat/{conversationId}/{modelName}") { backStackEntry ->
                             val conversationId = backStackEntry.arguments?.getString("conversationId") ?: ""
+                            val modelName = backStackEntry.arguments?.getString("modelName") ?: ""
                             val chatViewModel: ChatViewModel = viewModel(factory = ChatViewModelFactory(conversationId))
                             ChatScreen(
                                 navController = navController,
                                 authViewModel = authViewModel,
-                                chatViewModel = chatViewModel
+                                chatViewModel = chatViewModel,
+                                modelName = modelName
                             )
                         }
                     }
@@ -212,7 +214,7 @@ fun DevConversationListScreen(
         ) {
             items(conversations) { conversation ->
                 ConversationItem(conversation = conversation, onClick = {
-                    navController.navigate("chat/${conversation.id}")
+                    navController.navigate("chat/${conversation.id}/${conversation.modelName}")
                 })
             }
         }
@@ -248,7 +250,12 @@ fun ConversationItem(conversation: Conversation, onClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(navController: NavController, authViewModel: AuthViewModel, chatViewModel: ChatViewModel) {
+fun ChatScreen(
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    chatViewModel: ChatViewModel,
+    modelName: String
+) {
     val isDevUser by authViewModel.isDevUser.collectAsState()
     val messages by chatViewModel.messages.collectAsState()
     var text by remember { mutableStateOf("") }
@@ -284,7 +291,8 @@ fun ChatScreen(navController: NavController, authViewModel: AuthViewModel, chatV
                 OutlinedTextField(value = text, onValueChange = { text = it }, label = { Text("Message") }, modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(onClick = {
-                    chatViewModel.sendMessage(text)
+                    val senderNameOverride = if (isDevUser) modelName else null
+                    chatViewModel.sendMessage(text, senderNameOverride)
                     text = ""
                 }) { Text("Send") }
             }

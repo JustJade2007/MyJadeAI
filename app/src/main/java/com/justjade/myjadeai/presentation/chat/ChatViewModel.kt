@@ -46,10 +46,10 @@ class ChatViewModel(private val conversationId: String) : ViewModel() {
             }
     }
 
-    fun sendMessage(text: String) {
+    fun sendMessage(text: String, senderNameOverride: String? = null) {
         val currentUser = auth.currentUser
         if (text.isNotBlank() && currentUser != null && conversationId.isNotBlank()) {
-            val senderName = currentUser.displayName?.takeIf { it.isNotBlank() } ?: currentUser.email ?: "Anonymous"
+            val senderName = senderNameOverride ?: currentUser.displayName?.takeIf { it.isNotBlank() } ?: currentUser.email ?: "Anonymous"
             val message = Message(
                 senderId = currentUser.uid,
                 senderName = senderName,
