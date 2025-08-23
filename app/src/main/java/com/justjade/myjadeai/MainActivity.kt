@@ -78,7 +78,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         composable("login") {
-                            LoginScreen(navController = navController, viewModel = authViewModel)
+                            LoginScreen(viewModel = authViewModel)
                         }
                         composable("dev_panel") {
                             val devViewModel: DevViewModel = viewModel()
@@ -106,7 +106,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
+fun LoginScreen(viewModel: AuthViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
