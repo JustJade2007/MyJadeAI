@@ -56,14 +56,23 @@ class ChatViewModel(private val conversationId: String) : ViewModel() {
                 text = text,
                 timestamp = com.google.firebase.Timestamp.now()
             )
-            firestore.collection("conversations").document(conversationId).collection("messages")
-                .add(message)
-                .addOnSuccessListener {
-                    Log.d("ChatViewModel", "Message sent to conversation $conversationId")
-                }
-                .addOnFailureListener { e ->
-                    Log.w("ChatViewModel", "Error sending message to conversation $conversationId", e)
-                }
+            val conversationRef = firestore.collection("conversations").document(conversationId)
+
+            firestore.runBatch { batch ->
+                // Add the new message
+                batch.set(conversationRef.collection("messages").document(), message)
+
+                // Update the last message on the conversation document
+                val conversationUpdate = mapOf(
+                    "lastMessageText" to text,
+                    "lastMessageTimestamp" to message.timestamp
+                )
+                batch.update(conversationRef, conversationUpdate)
+            }.addOnSuccessListener {
+                Log.d("ChatViewModel", "Message sent and conversation updated for $conversationId")
+            }.addOnFailureListener { e ->
+                Log.w("ChatViewModel", "Error sending message for conversation $conversationId", e)
+            }
         }
     }
 

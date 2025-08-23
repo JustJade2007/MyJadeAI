@@ -34,6 +34,7 @@ import com.justjade.myjadeai.presentation.auth.AuthViewModel
 import com.justjade.myjadeai.presentation.chat.ChatViewModel
 import com.justjade.myjadeai.presentation.chat.ChatViewModelFactory
 import com.justjade.myjadeai.presentation.chat.ModelSelectionScreen
+import com.justjade.myjadeai.presentation.chat.model.Conversation
 import com.justjade.myjadeai.presentation.chat.model.Message
 import com.justjade.myjadeai.presentation.dev.DevPanelScreen
 import com.justjade.myjadeai.presentation.dev.DevViewModel
@@ -86,11 +87,18 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         composable("login") { LoginScreen(viewModel = authViewModel) }
-                        composable("model_selection") { ModelSelectionScreen(navController = navController) }
+                        composable("model_selection") { ModelSelectionScreen(navController = navController, authViewModel = authViewModel) }
                         composable("dev_panel") { DevPanelScreen(navController = navController, viewModel = viewModel()) }
                         composable("pending") { PendingScreen(viewModel = authViewModel) }
                         composable("declined") { DeclinedScreen(viewModel = authViewModel) }
-                        composable("dev_landing") { DevLandingScreen(navController = navController, authViewModel = authViewModel) }
+                        composable("dev_landing") {
+                            val devViewModel: DevViewModel = viewModel()
+                            DevConversationListScreen(
+                                navController = navController,
+                                authViewModel = authViewModel,
+                                devViewModel = devViewModel
+                            )
+                        }
                         composable("chat/{conversationId}") { backStackEntry ->
                             val conversationId = backStackEntry.arguments?.getString("conversationId") ?: ""
                             val chatViewModel: ChatViewModel = viewModel(factory = ChatViewModelFactory(conversationId))
@@ -176,13 +184,21 @@ fun DeclinedScreen(viewModel: AuthViewModel) {
     }
 }
 
+import androidx.compose.foundation.clickable
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DevLandingScreen(navController: NavController, authViewModel: AuthViewModel) {
+fun DevConversationListScreen(
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    devViewModel: DevViewModel
+) {
+    val conversations by devViewModel.conversations.collectAsState()
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Developer Hub") },
+                title = { Text("Conversations") },
                 actions = {
                     Button(onClick = { navController.navigate("dev_panel") }) { Text("Dev Panel") }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -191,8 +207,42 @@ fun DevLandingScreen(navController: NavController, authViewModel: AuthViewModel)
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-            Text("Welcome, Developer!", style = MaterialTheme.typography.headlineMedium)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            items(conversations) { conversation ->
+                ConversationItem(conversation = conversation, onClick = {
+                    navController.navigate("chat/${conversation.id}")
+                })
+            }
+        }
+    }
+}
+
+@Composable
+fun ConversationItem(conversation: Conversation, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "User: ${conversation.userName}",
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = "Model: ${conversation.modelName}",
+                style = MaterialTheme.typography.titleSmall
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = conversation.lastMessageText,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1
+            )
         }
     }
 }
@@ -200,6 +250,7 @@ fun DevLandingScreen(navController: NavController, authViewModel: AuthViewModel)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(navController: NavController, authViewModel: AuthViewModel, chatViewModel: ChatViewModel) {
+    val isDevUser by authViewModel.isDevUser.collectAsState()
     val messages by chatViewModel.messages.collectAsState()
     var text by remember { mutableStateOf("") }
     val currentUser = Firebase.auth.currentUser
@@ -209,8 +260,11 @@ fun ChatScreen(navController: NavController, authViewModel: AuthViewModel, chatV
             TopAppBar(
                 title = { Text("Chat") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    // Only show back button if it's a regular user
+                    if (!isDevUser) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
                     }
                 },
                 actions = {

@@ -14,18 +14,26 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.justjade.myjadeai.presentation.auth.AuthViewModel
 import com.justjade.myjadeai.presentation.dev.model.Model
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModelSelectionScreen(navController: NavController) {
+fun ModelSelectionScreen(navController: NavController, authViewModel: AuthViewModel) {
     val viewModel: ModelSelectionViewModel = viewModel()
     val models by viewModel.models.collectAsState()
     val currentUser = Firebase.auth.currentUser
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Select a Model to Chat With") })
+            TopAppBar(
+                title = { Text("Select a Model") },
+                actions = {
+                    Button(onClick = { authViewModel.signOut() }) {
+                        Text("Log Out")
+                    }
+                }
+            )
         }
     ) { innerPadding ->
         LazyColumn(
@@ -37,13 +45,10 @@ fun ModelSelectionScreen(navController: NavController) {
             items(models) { model ->
                 ModelItem(model = model, onClick = {
                     currentUser?.uid?.let { userId ->
-                        val modelId = model.id
-                        val conversationId = if (userId < modelId) {
-                            "${userId}_${modelId}"
-                        } else {
-                            "${modelId}_${userId}"
+                        val userName = currentUser.displayName ?: currentUser.email ?: "Anonymous"
+                        viewModel.onModelSelected(model, userId, userName) { conversationId ->
+                            navController.navigate("chat/$conversationId")
                         }
-                        navController.navigate("chat/$conversationId")
                     }
                 })
             }

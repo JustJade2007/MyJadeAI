@@ -3,9 +3,11 @@ package com.justjade.myjadeai.presentation.dev
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.justjade.myjadeai.presentation.chat.model.Conversation
 import com.justjade.myjadeai.presentation.dev.model.Model
 import com.justjade.myjadeai.presentation.dev.model.ServerStatus
 import com.justjade.myjadeai.presentation.dev.model.User
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,10 +27,14 @@ class DevViewModel : ViewModel() {
     private val _serverStatus = MutableStateFlow(ServerStatus())
     val serverStatus: StateFlow<ServerStatus> = _serverStatus
 
+    private val _conversations = MutableStateFlow<List<Conversation>>(emptyList())
+    val conversations: StateFlow<List<Conversation>> = _conversations
+
     init {
         fetchUsers()
         fetchModels()
         fetchServerStatus()
+        listenForConversations()
     }
 
     fun fetchUsers() {
@@ -122,5 +128,21 @@ class DevViewModel : ViewModel() {
                 Log.e("DevViewModel", "Error updating server status", e)
             }
         }
+    }
+
+    private fun listenForConversations() {
+        firestore.collection("conversations")
+            .orderBy("lastMessageTimestamp", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.w("DevViewModel", "Listen for conversations failed.", e)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    val conversationList = snapshot.toObjects(Conversation::class.java)
+                    _conversations.value = conversationList
+                }
+            }
     }
 }
