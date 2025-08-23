@@ -24,9 +24,6 @@ class AuthViewModel : ViewModel() {
     private val _userStatus = MutableStateFlow<String?>(null)
     val userStatus: StateFlow<String?> = _userStatus
 
-    private val _isDevUser = MutableStateFlow(false)
-    val isDevUser: StateFlow<Boolean> = _isDevUser
-
     init {
         auth.addAuthStateListener { firebaseAuth ->
             _user.value = firebaseAuth.currentUser
@@ -34,7 +31,6 @@ class AuthViewModel : ViewModel() {
                 checkUserStatus()
             } else {
                 _userStatus.value = null
-                _isDevUser.value = false
             }
         }
     }
@@ -69,7 +65,6 @@ class AuthViewModel : ViewModel() {
                     val document = firestore.collection("users").document(firebaseUser.uid).get().await()
                     if (document.exists()) {
                         _userStatus.value = document.getString("status")
-                        _isDevUser.value = document.getBoolean("isDev") ?: false
                     }
                 } catch (e: Exception) {
                     Log.e("AuthViewModel", "Error checking user status", e)
@@ -98,10 +93,8 @@ class AuthViewModel : ViewModel() {
                 if (!document.exists()) {
                     userRef.set(mapOf("status" to "pending")).await()
                     _userStatus.value = "pending"
-                    _isDevUser.value = false
                 } else {
                     _userStatus.value = document.getString("status")
-                    _isDevUser.value = document.getBoolean("isDev") ?: false
                 }
             }
         }
