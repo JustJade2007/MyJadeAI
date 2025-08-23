@@ -65,4 +65,25 @@ class ChatViewModel(private val conversationId: String) : ViewModel() {
                 }
         }
     }
+
+    fun resetConversation() {
+        if (conversationId.isBlank()) {
+            Log.w("ChatViewModel", "Conversation ID is blank. Cannot reset.")
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val messageCollection = firestore.collection("conversations").document(conversationId).collection("messages")
+                val messages = messageCollection.get().await()
+                val batch = firestore.batch()
+                for (document in messages) {
+                    batch.delete(document.reference)
+                }
+                batch.commit().await()
+                Log.d("ChatViewModel", "Conversation $conversationId reset successfully.")
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error resetting conversation $conversationId", e)
+            }
+        }
+    }
 }

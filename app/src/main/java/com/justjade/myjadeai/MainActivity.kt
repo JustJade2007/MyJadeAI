@@ -28,6 +28,8 @@ import com.justjade.myjadeai.presentation.auth.AuthViewModel
 import com.justjade.myjadeai.presentation.chat.ChatViewModel
 import com.justjade.myjadeai.presentation.chat.ChatViewModelFactory
 import com.justjade.myjadeai.presentation.chat.ModelSelectionScreen
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import com.justjade.myjadeai.presentation.chat.model.Message
 import com.justjade.myjadeai.presentation.dev.DevPanelScreen
 import com.justjade.myjadeai.presentation.dev.DevViewModel
@@ -51,9 +53,10 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val user by authViewModel.user.collectAsState()
                     val userStatus by authViewModel.userStatus.collectAsState()
+                    val isDevUser by authViewModel.isDevUser.collectAsState()
 
                     // This LaunchedEffect is always active and handles all navigation
-                    LaunchedEffect(user, userStatus) {
+                    LaunchedEffect(user, userStatus, isDevUser) {
                         val currentRoute = navController.currentBackStackEntry?.destination?.route
                         if (user == null) {
                             if (currentRoute != "login") {
@@ -64,7 +67,7 @@ class MainActivity : ComponentActivity() {
                         } else { // User is not null
                             if (userStatus != null) {
                                 val destination = when (userStatus) {
-                                    "approved" -> "model_selection"
+                                    "approved" -> if (isDevUser) "chat/dev_chat" else "model_selection"
                                     "pending" -> "pending"
                                     "declined" -> "declined"
                                     else -> null
@@ -246,7 +249,21 @@ fun ChatScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Chat") },
+                navigationIcon = {
+                    // Don't show back button for the dev's generic chat screen
+                    if (!isDevUser) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                },
                 actions = {
+                    if (!isDevUser) {
+                        Button(onClick = { chatViewModel.resetConversation() }) {
+                            Text("Reset")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
                     if (isDevUser) {
                         Button(onClick = { navController.navigate("dev_panel") }) {
                             Text("Dev Panel")
