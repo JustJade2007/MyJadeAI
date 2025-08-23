@@ -213,25 +213,35 @@ fun DeclinedScreen(viewModel: AuthViewModel) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(isDevUser: Boolean, navController: NavController, viewModel: AuthViewModel) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text("Welcome to the Chat!", style = MaterialTheme.typography.headlineMedium)
-
-        Row(modifier = Modifier.align(Alignment.TopEnd)) {
-            if (isDevUser) {
-                Button(onClick = { navController.navigate("dev_panel") }) {
-                    Text("Dev Panel")
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Chat") },
+                actions = {
+                    if (isDevUser) {
+                        Button(onClick = { navController.navigate("dev_panel") }) {
+                            Text("Dev Panel")
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = { viewModel.signOut() }) {
+                        Text("Log Out")
+                    }
                 }
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-            Button(onClick = { viewModel.signOut() }) {
-                Text("Log Out")
-            }
+            )
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp), // Add some content padding
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Welcome to the Chat!", style = MaterialTheme.typography.headlineMedium)
         }
     }
 }
