@@ -38,10 +38,10 @@ class ModelSelectionViewModel : ViewModel() {
                     return@launch
                 }
 
-                // Fetch only the models the user has access to that are also online
+                // Fetch only the models the user has access to
+                // Temporarily removing the "status == online" check for debugging
                 val result = firestore.collection("models")
                     .whereIn(FieldPath.documentId(), accessibleModelIds)
-                    .whereEqualTo("status", "online")
                     .get()
                     .await()
 
