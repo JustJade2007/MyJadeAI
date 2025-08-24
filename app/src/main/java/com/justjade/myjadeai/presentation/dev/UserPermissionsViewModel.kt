@@ -2,7 +2,9 @@ package com.justjade.myjadeai.presentation.dev
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.justjade.myjadeai.presentation.dev.model.Model
@@ -42,9 +44,14 @@ class UserPermissionsViewModel(private val userId: String) : ViewModel() {
 
     fun savePermissions(accessibleModelIds: List<String>) {
         viewModelScope.launch {
-            firestore.collection("users").document(userId)
-                .update("accessibleModelIds", accessibleModelIds)
-                .await()
+            try {
+                val data = mapOf("accessibleModelIds" to accessibleModelIds)
+                firestore.collection("users").document(userId)
+                    .set(data, SetOptions.merge())
+                    .await()
+            } catch (e: Exception) {
+                Log.e("UserPermissionsViewModel", "Error saving permissions for user $userId", e)
+            }
         }
     }
 }
