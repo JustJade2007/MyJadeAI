@@ -22,6 +22,7 @@ import com.justjade.myjadeai.presentation.dev.model.Model
 fun ModelSelectionScreen(navController: NavController, authViewModel: AuthViewModel) {
     val viewModel: ModelSelectionViewModel = viewModel()
     val models by viewModel.models.collectAsState()
+    val debugList by viewModel.debugPermissionList.collectAsState()
     val currentUser = Firebase.auth.currentUser
 
     Scaffold(
@@ -36,21 +37,29 @@ fun ModelSelectionScreen(navController: NavController, authViewModel: AuthViewMo
             )
         }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(16.dp)
-        ) {
-            items(models) { model ->
-                ModelItem(model = model, onClick = {
-                    currentUser?.uid?.let { userId ->
-                        val userName = currentUser.displayName ?: currentUser.email ?: "Anonymous"
-                        viewModel.onModelSelected(model, userId, userName) { conversationId ->
-                            navController.navigate("chat/$conversationId")
-                        }
+        Column(modifier = Modifier.padding(innerPadding)) {
+            Text("Debug Info: Permissions = ${debugList.joinToString(", ")}", modifier = Modifier.padding(16.dp))
+            Divider()
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(16.dp)
+            ) {
+                if (models.isEmpty()) {
+                    item {
+                        Text("No online models available or you don't have permission.")
                     }
-                })
+                }
+                items(models) { model ->
+                    ModelItem(model = model, onClick = {
+                        currentUser?.uid?.let { userId ->
+                            val userName = currentUser.displayName ?: currentUser.email ?: "Anonymous"
+                            viewModel.onModelSelected(model, userId, userName) { conversationId ->
+                                navController.navigate("chat/$conversationId")
+                            }
+                        }
+                    })
+                }
             }
         }
     }

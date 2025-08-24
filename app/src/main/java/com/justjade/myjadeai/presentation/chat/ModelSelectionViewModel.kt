@@ -22,6 +22,9 @@ class ModelSelectionViewModel : ViewModel() {
     private val _models = MutableStateFlow<List<Model>>(emptyList())
     val models: StateFlow<List<Model>> = _models
 
+    private val _debugPermissionList = MutableStateFlow<List<String>>(emptyList())
+    val debugPermissionList: StateFlow<List<String>> = _debugPermissionList
+
     init {
         fetchModels()
     }
@@ -32,6 +35,7 @@ class ModelSelectionViewModel : ViewModel() {
                 val userId = auth.currentUser?.uid ?: return@launch
                 val userDoc = firestore.collection("users").document(userId).get().await()
                 val accessibleModelIds = userDoc.get("accessibleModelIds") as? List<String>
+                _debugPermissionList.value = accessibleModelIds ?: listOf("Error: field not found or null")
 
                 if (accessibleModelIds.isNullOrEmpty()) {
                     _models.value = emptyList()
