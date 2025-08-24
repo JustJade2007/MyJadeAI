@@ -43,7 +43,7 @@ fun DevPanelScreen(navController: NavController, viewModel: DevViewModel) {
                 }
             }
             when (tabIndex) {
-                0 -> UserManagementScreen(viewModel)
+                0 -> UserManagementScreen(viewModel, navController)
                 1 -> ModelStatusScreen(viewModel)
                 2 -> ServerStatusScreen(viewModel)
             }
