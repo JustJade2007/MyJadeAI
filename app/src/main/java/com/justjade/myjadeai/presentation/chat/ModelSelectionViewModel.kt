@@ -3,6 +3,8 @@ package com.justjade.myjadeai.presentation.chat
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -15,6 +17,7 @@ import kotlinx.coroutines.tasks.await
 
 class ModelSelectionViewModel : ViewModel() {
     private val firestore = Firebase.firestore
+    private val auth = Firebase.auth
 
     private val _models = MutableStateFlow<List<Model>>(emptyList())
     val models: StateFlow<List<Model>> = _models
@@ -26,8 +29,22 @@ class ModelSelectionViewModel : ViewModel() {
     private fun fetchModels() {
         viewModelScope.launch {
             try {
-                // We only want to show online models to the user
-                val result = firestore.collection("models").whereEqualTo("status", "online").get().await()
+                val userId = auth.currentUser?.uid ?: return@launch
+                val userDoc = firestore.collection("users").document(userId).get().await()
+                val accessibleModelIds = userDoc.get("accessibleModelIds") as? List<String>
+
+                if (accessibleModelIds.isNullOrEmpty()) {
+                    _models.value = emptyList()
+                    return@launch
+                }
+
+                // Fetch only the models the user has access to that are also online
+                val result = firestore.collection("models")
+                    .whereIn(FieldPath.documentId(), accessibleModelIds)
+                    .whereEqualTo("status", "online")
+                    .get()
+                    .await()
+
                 val modelList = result.documents.map { document ->
                     Model(
                         id = document.id,

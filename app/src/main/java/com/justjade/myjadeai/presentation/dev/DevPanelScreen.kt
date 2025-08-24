@@ -52,18 +52,20 @@ fun DevPanelScreen(navController: NavController, viewModel: DevViewModel) {
 }
 
 @Composable
-fun UserManagementScreen(viewModel: DevViewModel) {
+fun UserManagementScreen(viewModel: DevViewModel, navController: NavController) {
     val users by viewModel.users.collectAsState()
 
     LazyColumn(modifier = Modifier.padding(16.dp)) {
         items(users) { user ->
-            UserRow(user = user, viewModel = viewModel)
+            UserRow(user = user, viewModel = viewModel, onManageClick = {
+                navController.navigate("user_permissions/${user.uid}")
+            })
         }
     }
 }
 
 @Composable
-fun UserRow(user: User, viewModel: DevViewModel) {
+fun UserRow(user: User, viewModel: DevViewModel, onManageClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -87,6 +89,10 @@ fun UserRow(user: User, viewModel: DevViewModel) {
             Button(onClick = { viewModel.updateUserStatus(user.uid, "pending") }) {
                 Text("Revoke")
             }
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Button(onClick = onManageClick) {
+            Text("Manage")
         }
     }
 }

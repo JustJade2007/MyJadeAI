@@ -42,10 +42,12 @@ class DevViewModel : ViewModel() {
             try {
                 val result = firestore.collection("users").get().await()
                 val userList = result.documents.map { document ->
+                    @Suppress("UNCHECKED_CAST")
                     User(
                         uid = document.id,
                         email = document.getString("email") ?: "No Email",
-                        status = document.getString("status") ?: "No Status"
+                        status = document.getString("status") ?: "No Status",
+                        accessibleModelIds = document.get("accessibleModelIds") as? List<String> ?: emptyList()
                     )
                 }
                 _users.value = userList

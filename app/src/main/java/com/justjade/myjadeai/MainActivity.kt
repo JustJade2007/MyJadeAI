@@ -39,6 +39,7 @@ import com.justjade.myjadeai.presentation.chat.model.Conversation
 import com.justjade.myjadeai.presentation.chat.model.Message
 import com.justjade.myjadeai.presentation.dev.DevPanelScreen
 import com.justjade.myjadeai.presentation.dev.DevViewModel
+import com.justjade.myjadeai.presentation.dev.UserPermissionsScreen
 import com.justjade.myjadeai.ui.theme.MyJadeAITheme
 import kotlinx.coroutines.launch
 
@@ -90,6 +91,10 @@ class MainActivity : ComponentActivity() {
                         composable("login") { LoginScreen(viewModel = authViewModel) }
                         composable("model_selection") { ModelSelectionScreen(navController = navController, authViewModel = authViewModel) }
                         composable("dev_panel") { DevPanelScreen(navController = navController, viewModel = viewModel()) }
+                        composable("user_permissions/{userId}") { backStackEntry ->
+                            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+                            UserPermissionsScreen(navController = navController, userId = userId)
+                        }
                         composable("pending") { PendingScreen(viewModel = authViewModel) }
                         composable("declined") { DeclinedScreen(viewModel = authViewModel) }
                         composable("dev_landing") {
